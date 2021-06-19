@@ -9,10 +9,8 @@ def Add_file(files):
         return files
     return
 
-def file_len(file):
-    for i, l in enumerate(file):
-        pass
-    return i
+
+
 
 def Load_trials(files=[], trials=[]):
     """
@@ -33,11 +31,10 @@ def Load_trials(files=[], trials=[]):
             break
 
     for file in files:
-        # with open (file) as ff:
-        #     print('file name: {} has {} records'.format(file,file_len(ff)))
         with open (file) as ff:
             added_trial_counter = 0
             repeated_counter = 0
+            failed_to_read_counter = 0
             ff.readline() #skips the title line
             line_read_counter = 0
             while True:
@@ -45,7 +42,7 @@ def Load_trials(files=[], trials=[]):
                 try:
                     line=ff.readline()
                 except:
-                    print('skipping line')
+                    failed_to_read_counter += 1
                     continue
                 #breaks at last line
                 if not line:
@@ -65,9 +62,22 @@ def Load_trials(files=[], trials=[]):
                     else:
                         repeated_counter += 1
             print('The last record imported in file {} was rank {}. Excluding {} repeated '
-                  'imported {} trials. \n Lines read {}'.format(file,
-                    fields[0], repeated_counter, added_trial_counter, line_read_counter))
+                  'imported {} trials. \n Lines read {} and failed to read {} lines'.format(file,
+                    fields[0], repeated_counter, added_trial_counter, line_read_counter, failed_to_read_counter))
     return trials
+
+def Word_list(trial_id, title, conditions, interventions):
+    word_list = set()
+    word_dict = {}
+
+    words = title.split(" ") + conditions.split(" ") + interventions.split(" ")
+    word_list.union(set(words))
+    for word in words:
+        if word in word_dict.keys():
+            word_dict[word].append(trial_id)
+        else:
+            word_dict[word]=[trial_id]
+    return words
 
 class Trial(object):
     """
@@ -86,6 +96,7 @@ class Trial(object):
         self.locations=locations
         self.url=url
         self.file_name = file_name
+        self.key_words = Word_list (self.id, title, conditions, interventions)
 
     def repeated(self, trials):
         for trial in trials:
@@ -95,7 +106,10 @@ class Trial(object):
 
 
 if __name__ == '__main__':
+
     # laods trials asking the user for file names and starts trials from an empty list
     files=['210618_lymphoma_tcell.tsv','210618_leukemia_lymphoblastic.tsv']
-    print(Load_trials(files))
+    trials=Load_trials(files)
+    print(trials)
+    print (word_dict)
 
