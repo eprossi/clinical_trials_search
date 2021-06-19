@@ -9,6 +9,11 @@ def Add_file(files):
         return files
     return
 
+def file_len(file):
+    for i, l in enumerate(file):
+        pass
+    return i
+
 def Load_trials(files=[], trials=[]):
     """
     Takes in files (list of strings with names of the files to load)
@@ -28,21 +33,40 @@ def Load_trials(files=[], trials=[]):
             break
 
     for file in files:
+        # with open (file) as ff:
+        #     print('file name: {} has {} records'.format(file,file_len(ff)))
         with open (file) as ff:
-            line_counter = 0
+            added_trial_counter = 0
+            repeated_counter = 0
+            ff.readline() #skips the title line
+            line_read_counter = 0
             while True:
-                line=ff.readline()
+                line_read_counter += 1
+                try:
+                    line=ff.readline()
+                except:
+                    print('skipping line')
+                    continue
                 #breaks at last line
                 if not line:
                     break
-                #skip the first line that has field names
-                elif line_counter==0:
-                    continue
-                line_counter += 1
-                #splits by tabs
-                fields=line.split("\t")
-                # instances a new trial for each line and includes in list of trials
-                trials.append(Trial(fields[0], fields[1], fields[2], fields[3], fields[4],fields[5], fields[6], file))
+                else:
+                    #splits by tabs
+                    try:
+                        fields = line.split("\t")
+                        rank = int(fields[0])
+                    except:
+                        continue
+                    # instances a new trial for each line and includes in list of trials
+                    trial=(Trial(fields[0], fields[1], fields[2], fields[3], fields[4],fields[5], fields[6], fields[7], file))
+                    if not trial.repeated(trials):
+                        trials.append(trial)
+                        added_trial_counter += 1
+                    else:
+                        repeated_counter += 1
+            print('The last record imported in file {} was rank {}. Excluding {} repeated '
+                  'imported {} trials. \n Lines read {}'.format(file,
+                    fields[0], repeated_counter, added_trial_counter, line_read_counter))
     return trials
 
 class Trial(object):
@@ -50,9 +74,10 @@ class Trial(object):
     Class that holds an instance for each trial
     """
     id_counter=0
-    def __init__(self, title, status, study_results, conditions, interventions, locations, url, file_name):
+    def __init__(self, rank, title, status, study_results, conditions, interventions, locations, url, file_name):
         Trial.id_counter += 1
         self.id=Trial.id_counter
+        self.rank=rank
         self.title=title
         self.status=status
         self.study_results=study_results
@@ -62,8 +87,15 @@ class Trial(object):
         self.url=url
         self.file_name = file_name
 
+    def repeated(self, trials):
+        for trial in trials:
+            if trial.title == self.title:
+                return True
+        return False
+
 
 if __name__ == '__main__':
     # laods trials asking the user for file names and starts trials from an empty list
-    Load_trials()
+    files=['210618_lymphoma_tcell.tsv','210618_leukemia_lymphoblastic.tsv']
+    print(Load_trials(files))
 
