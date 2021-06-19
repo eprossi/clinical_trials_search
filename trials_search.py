@@ -66,18 +66,28 @@ def Load_trials(files=[], trials=[]):
                     fields[0], repeated_counter, added_trial_counter, line_read_counter, failed_to_read_counter))
     return trials
 
-def Word_list(trial_id, title, conditions, interventions):
+class Word_list(object):
     word_list = set()
     word_dict = {}
+    print('iniciei wordlist class')
 
-    words = title.split(" ") + conditions.split(" ") + interventions.split(" ")
-    word_list.union(set(words))
-    for word in words:
-        if word in word_dict.keys():
-            word_dict[word].append(trial_id)
-        else:
-            word_dict[word]=[trial_id]
-    return words
+    def __init__(self, title, conditions, interventions, trial_id):
+        self.words=[]
+        self.title=title
+        self.conditions=conditions
+        self.interventions=interventions
+        self.trial_id=trial_id
+        self.Add_words()
+
+    def Add_words(self):
+        self.words = self.title.split(" ") + self.conditions.split(" ") + self.interventions.split(" ")
+        Word_list.word_list=Word_list.word_list.union(set(self.words))
+        for word in self.words:
+            if word in Word_list.word_dict.keys():
+                Word_list.word_dict[word].append(self.trial_id)
+            else:
+                Word_list.word_dict[word]=[self.trial_id]
+        return self.words
 
 class Trial(object):
     """
@@ -96,7 +106,7 @@ class Trial(object):
         self.locations=locations
         self.url=url
         self.file_name = file_name
-        self.key_words = Word_list (self.id, title, conditions, interventions)
+        self.key_words = Word_list (title, conditions, interventions, self.id)
 
     def repeated(self, trials):
         for trial in trials:
@@ -111,5 +121,5 @@ if __name__ == '__main__':
     files=['210618_lymphoma_tcell.tsv','210618_leukemia_lymphoblastic.tsv']
     trials=Load_trials(files)
     print(trials)
-    print (word_dict)
+    print (Word_list.word_dict)
 
