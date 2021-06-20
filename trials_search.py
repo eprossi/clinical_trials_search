@@ -2,14 +2,13 @@
 
 """
 
+
 def Add_file(files):
     file = str(input('input file name when done press enter'))
     if file:
         files.append(file)
         return files
     return
-
-
 
 
 def Load_trials(files=[], trials=[]):
@@ -31,31 +30,33 @@ def Load_trials(files=[], trials=[]):
             break
 
     for file in files:
-        with open (file) as ff:
+        with open(file) as ff:
             added_trial_counter = 0
             repeated_counter = 0
             failed_to_read_counter = 0
-            ff.readline() #skips the title line
+            ff.readline()  # skips the title line
             line_read_counter = 0
             while True:
                 line_read_counter += 1
                 try:
-                    line=ff.readline()
+                    line = ff.readline()
                 except:
                     failed_to_read_counter += 1
                     continue
-                #breaks at last line
+                # breaks at last line
                 if not line:
                     break
                 else:
-                    #splits by tabs
+                    # splits by tabs
                     try:
                         fields = line.split("\t")
                         rank = int(fields[0])
                     except:
                         continue
                     # instances a new trial for each line and includes in list of trials
-                    trial=(Trial(fields[0], fields[1], fields[2], fields[3], fields[4],fields[5], fields[6], fields[7], file))
+                    trial = (
+                        Trial(fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7],
+                              file))
                     if not trial.repeated(trials):
                         trials.append(trial)
                         added_trial_counter += 1
@@ -63,50 +64,65 @@ def Load_trials(files=[], trials=[]):
                         repeated_counter += 1
             print('The last record imported in file {} was rank {}. Excluding {} repeated '
                   'imported {} trials. \n Lines read {} and failed to read {} lines'.format(file,
-                    fields[0], repeated_counter, added_trial_counter, line_read_counter, failed_to_read_counter))
+                                                                                            fields[0], repeated_counter,
+                                                                                            added_trial_counter,
+                                                                                            line_read_counter,
+                                                                                            failed_to_read_counter))
     return trials
 
+class Word(object):
+    # slots limita os atributos de cada instance do objeto. Fica mais rapido. mas menos flexivel.
+    __slots__ = ('word', 'frequency', 'trials')
+
+    def __init__(self, word, trial_id):
+        self.word = word
+        self.frequency = 1
+        self.trials = {trial_id}
+
+    def add(self, trial_id):
+        self.frequency += 1
+        self.trials.add(trial_id)
+
 class Word_list(object):
-    word_list = set()
-    word_dict = {}
-    print('iniciei wordlist class')
+    def __init__(self):
+        self.word_list = []
 
-    def __init__(self, title, conditions, interventions, trial_id):
-        self.words=[]
-        self.title=title
-        self.conditions=conditions
-        self.interventions=interventions
-        self.trial_id=trial_id
-        self.Add_words()
+    def union(self, title, conditions, interventions):
+        word_union = title.split(";' |,") + conditions.split(";' |,") + interventions.split(";' |,")
+        return word_union
 
-    def Add_words(self):
-        self.words = self.title.split(" ") + self.conditions.split(" ") + self.interventions.split(" ")
-        Word_list.word_list=Word_list.word_list.union(set(self.words))
-        for word in self.words:
-            if word in Word_list.word_dict.keys():
-                Word_list.word_dict[word].append(self.trial_id)
-            else:
-                Word_list.word_dict[word]=[self.trial_id]
-        return self.words
+    def add_words(self, words, trial_id):
+        for word in words:
+            found_word = False
+            for instance in self.word_list:
+                if instance.word == word:
+                    instance.add(trial_id)
+                    found_word = True
+                    break
+            if not found_word:
+                self.word_list.append(Word(word, trial_id))
 
-class Trial(object):
+    def get(self):
+        return self.word_list
+
+class Trial():
     """
     Class that holds an instance for each trial
     """
-    id_counter=0
+    id_counter = 0
+
     def __init__(self, rank, title, status, study_results, conditions, interventions, locations, url, file_name):
         Trial.id_counter += 1
-        self.id=Trial.id_counter
-        self.rank=rank
-        self.title=title
-        self.status=status
-        self.study_results=study_results
-        self.conditions=conditions
-        self.interventions=interventions
-        self.locations=locations
-        self.url=url
+        self.id = Trial.id_counter
+        self.rank = rank
+        self.title = title
+        self.status = status
+        self.study_results = study_results
+        self.conditions = conditions
+        self.interventions = interventions
+        self.locations = locations
+        self.url = url
         self.file_name = file_name
-        self.key_words = Word_list (title, conditions, interventions, self.id)
 
     def repeated(self, trials):
         for trial in trials:
@@ -116,10 +132,14 @@ class Trial(object):
 
 
 if __name__ == '__main__':
+    #initializes Word_list
+    wl=Word_list()
 
     # laods trials asking the user for file names and starts trials from an empty list
-    files=['210618_lymphoma_tcell.tsv','210618_leukemia_lymphoblastic.tsv']
-    trials=Load_trials(files)
-    print(trials)
-    print (Word_list.word_dict)
+    files = ['210618_lymphoma_tcell.tsv', '210618_leukemia_lymphoblastic.tsv']
 
+    trials = Load_trials(files)
+
+    print(trials)
+
+    print(wl.get())
