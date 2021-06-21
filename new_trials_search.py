@@ -186,7 +186,7 @@ class Cloud (object):
         self.updates_sets()
         self.trials_in_cloud = self.filter_trials(self.parent_data[0], self.word, self.yes_no)
 
-
+     # todo: continuar daqui
 
 """
 method new_cloud - run a series of methods:
