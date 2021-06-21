@@ -112,6 +112,10 @@ class Trial(object):
             Trial.trials.append(Trial(Trial.id_counter, rank, title, status, study_results, conditions,
                                       interventions, locations, url, file_name))
 
+    @classmethod
+    def all_trials_getter (cls):
+        returns (cls.trials.copy())
+
     def __init__(self, id, rank, title, status, study_results, conditions, interventions, locations, url, file_name):
         self.id = id
         self.rank = rank
@@ -147,23 +151,28 @@ class Cloud (object):
         self.ignore = ignore
         self.parent=parent
 
-        self.trials_in_cloud = set()
+        self.trials_in_cloud = []
         self.yes_words = set()
         self.no_words = set()
         self.ignore_words = set()
         self.word_frequency_dict = {}
 
-    def getter (self):
-        return (self.trials_in_cloud.copy(), self.yes_words.copy(), self.no_words.copy(), self.ignore_words.copy())
-
     def filter_trials(self):
 
-    def new_cloud (self):
+    def get_parent_data (self, parent):
+        """
+        takes in parent
+        returns a tupple with sets of parent trials, yes, no, ignore
+         if parent is NONE (first instance) - returns a tupple of all trials + 3 empty sets
+        """
         try:
-            parent_trials,parent_yes, parent_no, parent_ignore = self.parent.getter ()
+            return (parent.trials_in_cloud.copy(), parent.yes_words.copy(), parent.no_words.copy(), parent.ignore_words.copy())
         except:
-            parent_trials, parent_yes, parent_no, parent_ignore = ({},{},{},{})
-        self.filter_trials()
+            return (Trials.all_trial_getter(), {}, {}, {})
+
+    def new_cloud (self):
+        self.parent_data = get_parent_data (parent) #trials, yes, no, ignore
+        self.filter_trials(self.parent_data)
 
 
 
