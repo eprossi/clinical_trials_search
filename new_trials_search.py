@@ -157,7 +157,9 @@ class Cloud (object):
         self.ignore_words = set()
         self.word_frequency_dict = {}
 
-    def filter_trials(self):
+    def filter_trials(self, old_trials, new_word, yes_no):
+        # takes old trials, loops them selecting only the yes or removing the nos / returns list
+        pass
 
     def get_parent_data (self, parent):
         """
@@ -170,9 +172,19 @@ class Cloud (object):
         except:
             return (Trials.all_trial_getter(), {}, {}, {})
 
+    def updates_sets(self, parent_yes, parent_no, parent_ignore):
+        self.yes_words = set.union(self.yes_words, parent_yes)
+        self.no_words = set.union(self.no_words, parent_no)
+        self.ignore_words = set.union(self.ignore_words, parent_ignore, self.ignore)
+        if self.yes_no == 'y' or self.yes_no == 'yes':
+            self.yes_words.add(self.word)
+        elif self.yes_no == 'n' or self.yes_no == 'no':
+            self.no_words.add(self.word)
+
     def new_cloud (self):
         self.parent_data = get_parent_data (parent) #trials, yes, no, ignore
-        self.filter_trials(self.parent_data)
+        self.updates_sets()
+        self.trials_in_cloud = self.filter_trials(self.parent_data[0], self.word, self.yes_no)
 
 
 
