@@ -83,7 +83,7 @@ class Trial(object):
     Class that holds an instance for each trial
     """
     id_counter = 0
-    trials = {} # dict of trials (sorted by unique_ID and Description and INSTANCE)
+    trials = [] ##MUDEI DE IDEIA - LISTA SO DAS INSTANCES... # dict of trials (sorted by unique_ID and TITLE and INSTANCE)
 
     @classmethod
     def get_trials(cls, trial_ids):
@@ -95,18 +95,25 @@ class Trial(object):
         return trials
 
     @classmethod
-    def add_trial(cls, trial):
-        pass
-        # CHECK IF REPEATED
-        #     ADD IF NOT REPEATED
-        #         instances
-        #         add to dic.
-        # IF REPEATED SKIP
+    def repeated (cls, new_trial_title):
+        for trial in Trial.trials:
+            if new_trial_title == trial.title:
+                return True
+        return False
 
+    @classmethod
+    def add_trial(cls, rank, title, status, study_results, conditions, interventions, locations, url, file_name):
+        """
+        takes in all the fields from the importaed line
+        if not repeated instances and adds to list of Trials
+        """
+        if not repeated(title):
+            Trial.id_counter += 1
+            Trial.trials.append(Trial(Trial.id_counter, rank, title, status, study_results, conditions,
+                                      interventions, locations, url, file_name))
 
-    def __init__(self, rank, title, status, study_results, conditions, interventions, locations, url, file_name):
-        Trial.id_counter += 1
-        self.id = Trial.id_counter
+    def __init__(self, id, rank, title, status, study_results, conditions, interventions, locations, url, file_name):
+        self.id = id
         self.rank = rank
         self.title = title
         self.status = status
@@ -119,17 +126,66 @@ class Trial(object):
         self.words = self.create_word_list ()
 
     def split(self, string):
-    """splits strings and return list of words"""
-
+        """splits strings and return list of words"""
+        return (string.split(";' |,"))
 
     def create_word_list(self):
-        """creates its own word list """
+        """creates its own word set """
         return set(split(self.title)+split(self.conditions)+split(self.interventions))
 
+class Cloud (object):
+    """
+    each cloud instance has a parent, a word that it adds or removes, a list of ignores, list of words and frequencies
+    """
+    id_counter = 0
+
+    def __init__(self, word, yes_no, ignore=[], parent = None):
+        Cloud.id_counter += 1
+        self.id = Cloud.id_counter
+        self.word = word
+        self.yes_no=yes_no
+        self.ignore = ignore
+        self.parent=parent
+
+        self.trials_in_cloud = set()
+        self.yes_words = set()
+        self.no_words = set()
+        self.ignore_words = set()
+        self.word_frequency_dict = {}
+
+    def getter (self):
+        return (self.trials_in_cloud.copy(), self.yes_words.copy(), self.no_words.copy(), self.ignore_words.copy())
+
+    def filter_trials(self):
+
+    def new_cloud (self):
+        try:
+            parent_trials,parent_yes, parent_no, parent_ignore = self.parent.getter ()
+        except:
+            parent_trials, parent_yes, parent_no, parent_ignore = ({},{},{},{})
+        self.filter_trials()
 
 
-    def repeated(self, trials):
-        for trial in trials:
-            if trial.title == self.title:
-                return True
-        return False
+
+"""
+method new_cloud - run a series of methods:
+                   gets trials from parent, filters with new word and set new list of trials
+                   gets parents yes words and no words and updates
+                   get new list of trials and gets all the words that have them if
+                                     either all trials have a list of words in them (then search by trials)
+                                     or i have to go word by word and match trials
+                                     i think that better for trials to have the words list because  less trials
+                                     than words.
+                                     do words need to have trials?  maybe not.
+
+
+
+
+when i select a word, it needs to find all trials that have that word and then select all words that are in that list
+of trials.
+each word has a number of trials.
+when i say yes to that word, i need to take the list of trials of that word
+then i say yes to another word - I REMOVE all trials from the first list that ARE NOT in the second words list
+then i say NO to a word - I take the list of the TRIALS of that word and REMOVE from the trial list.
+AT THE END I get this new list of trials and get all their words AND NEW FREQUENCY
+This all needs to happen in the CLOUD class
