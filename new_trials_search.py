@@ -78,19 +78,12 @@ This all needs to happen in the CLOUD class
 """
 
 
-class Trial():
+class Trial(object):
     """
     Class that holds an instance for each trial
     """
     id_counter = 0
     trials = {} # dict of trials (sorted by unique_ID and Description and INSTANCE)
-
-    @classmethod
-    def add_trial(cls, RECEIVES TRIAL):
-        CHECK IF REPEATED
-            ADD IF NOT REPEATED
-            ADD 1 TO Trial.id_counter
-        IF REPEATED SKIP
 
     @classmethod
     def get_trials(cls, trial_ids):
@@ -101,14 +94,14 @@ class Trial():
         trials = [Trial.trials[id].instance for id in trial_ids]
         return trials
 
-
-class method - setter trial - checks if repeated and add if not. Adds to list of trials. Adds 1 to counter.
-- class method - getter trial - by ID (s) returns a list of the  the specific trial (s)
-- class attribute - trial counter: setter trial adds 1 every time there is no repeated
-TRIAL INSTANCES
-- instanced by the class method
-- attributes: unique_id, fiels from clinicaltrials.org
-- when init - runs WORD class method sending list of words, trial ID.
+    @classmethod
+    def add_trial(cls, trial):
+        pass
+        # CHECK IF REPEATED
+        #     ADD IF NOT REPEATED
+        #         instances
+        #         add to dic.
+        # IF REPEATED SKIP
 
 
     def __init__(self, rank, title, status, study_results, conditions, interventions, locations, url, file_name):
@@ -123,12 +116,16 @@ TRIAL INSTANCES
         self.locations = locations
         self.url = url
         self.file_name = file_name
-        self.create_word_list()
+        self.words = self.create_word_list ()
+
+    def split(self, string):
+    """splits strings and return list of words"""
+
 
     def create_word_list(self):
-        wlist=Word_list()
-        all_words = wlist.union(self.title, self.conditions, self.interventions)
-        wlist.add_words(all_words, self.id)
+        """creates its own word list """
+        return set(split(self.title)+split(self.conditions)+split(self.interventions))
+
 
 
     def repeated(self, trials):
