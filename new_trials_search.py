@@ -157,9 +157,11 @@ class Cloud (object):
         self.ignore_words = set()
         self.word_frequency_dict = {}
 
-    def filter_trials(self, old_trials, new_word, yes_no):
+    def filter_trials(self, parent_trials, new_word, yes_no):
         # takes old trials, loops them selecting only the yes or removing the nos / returns list
-        pass
+        if yes_no == 'y' or yes_no == 'yes':
+        raise exception NotImplemented
+        
 
     def get_parent_data (self, parent):
         """
@@ -182,9 +184,9 @@ class Cloud (object):
             self.no_words.add(self.word)
 
     def new_cloud (self):
-        self.parent_data = get_parent_data (parent) #trials, yes, no, ignore
-        self.updates_sets()
-        self.trials_in_cloud = self.filter_trials(self.parent_data[0], self.word, self.yes_no)
+        self.parent_trials, self.parent_yes, self.parent_no, self.parent_ignore = get_parent_data (parent)
+        self.updates_sets(self.parent_yes, self.parent_no, self.parent_ignore)
+        self.trials_in_cloud = self.filter_trials(self.parent_trials, self.word, self.yes_no)
 
      # todo: continuar daqui
 
