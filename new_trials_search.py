@@ -159,9 +159,16 @@ class Cloud (object):
 
     def filter_trials(self, parent_trials, new_word, yes_no):
         # takes old trials, loops them selecting only the yes or removing the nos / returns list
+        trials_to_return = []
         if yes_no == 'y' or yes_no == 'yes':
-        raise exception NotImplemented
-
+            for trial in parent_trials:
+                if new_word in trial.words:
+                    trials_to_return.append(trial)
+        elif yes_no == 'n' or yes_no == 'no':
+            for trial in parent_trials:
+                if new_word not in trial.words:
+                    trials_to_return.append(trial)
+        return trials_to_return
 
     def get_parent_data (self, parent):
         """
@@ -170,7 +177,8 @@ class Cloud (object):
          if parent is NONE (first instance) - returns a tupple of all trials + 3 empty sets
         """
         try:
-            return (parent.trials_in_cloud.copy(), parent.yes_words.copy(), parent.no_words.copy(), parent.ignore_words.copy())
+            return (parent.trials_in_cloud.copy(), parent.yes_words.copy(), parent.no_words.copy(),
+                    parent.ignore_words.copy())
         except:
             return (Trials.all_trial_getter(), {}, {}, {})
 
@@ -189,7 +197,8 @@ class Cloud (object):
         elif self.yes_no == 'n' or self.yes_no == 'no':
             self.no_words.add(self.word)
 
-    def create_cloud_dict (self, trials_in_cloud):
+    @staticmethod
+    def create_cloud_dict (trials_in_cloud):
         """
         gets trials in cloud
         loops every filtered trial and adds word + frequeny to dict
@@ -206,31 +215,9 @@ class Cloud (object):
 
     def new_cloud (self):
         # gets trials, yes, no and ignore from parent
-        self.parent_trials, self.parent_yes, self.parent_no, self.parent_ignore = get_parent_data (parent)
+        self.parent_trials, self.parent_yes, self.parent_no, self.parent_ignore = get_parent_data (self.parent)
         #updates sets (yes, no and ignore) of self by adding parent info
         self.updates_sets(self.parent_yes, self.parent_no, self.parent_ignore)
         self.trials_in_cloud = self.filter_trials(self.parent_trials, self.word, self.yes_no)
-        self.word_frequency_dict = self.create_cloud_dict (self.trials_in_cloud)
+        self.word_frequency_dict = Cloud.create_cloud_dict (self.trials_in_cloud)
 
-"""
-method new_cloud - run a series of methods:
- done                  gets trials from parent, filters with new word and set new list of trials
- done                  gets parents yes words and no words and updates
-                   get new list of trials and gets all the words that have them if
-                                     either all trials have a list of words in them (then search by trials)
-                                     or i have to go word by word and match trials
-                                     i think that better for trials to have the words list because  less trials
-                                     than words.
-                                     do words need to have trials?  maybe not.
-
-
-
-
-when i select a word, it needs to find all trials that have that word and then select all words that are in that list
-of trials.
-each word has a number of trials.
-when i say yes to that word, i need to take the list of trials of that word
-then i say yes to another word - I REMOVE all trials from the first list that ARE NOT in the second words list
-then i say NO to a word - I take the list of the TRIALS of that word and REMOVE from the trial list.
-AT THE END I get this new list of trials and get all their words AND NEW FREQUENCY
-This all needs to happen in the CLOUD class
