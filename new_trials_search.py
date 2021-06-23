@@ -76,6 +76,8 @@ This all needs to happen in the CLOUD class
 
 
 """
+import re
+
 def Add_file(files):
     file = str(input('input file name when done press enter'))
     if file:
@@ -140,14 +142,12 @@ class Trial(object):
     id_counter = 0
     trials = [] ##MUDEI DE IDEIA - LISTA SO DAS INSTANCES... # dict of trials (sorted by unique_ID and TITLE and INSTANCE)
 
-    @classmethod
-    def get_trials(cls, trial_ids):
-        """
-        takes ids of the trials being searched
-        returns a list of such trials
-        """
-        trials = [Trial.trials[id].instance for id in trial_ids]
-        return trials
+    # @classmethod
+    # def get_trials(cls):
+    #     """
+    # returns a copy of trials list
+    #     """
+    #     return trials.copy()
 
     @classmethod
     def repeated (cls, new_trial_title):
@@ -169,7 +169,7 @@ class Trial(object):
 
     @classmethod
     def all_trials_getter (cls):
-        returns (cls.trials.copy())
+        return (cls.trials.copy())
 
     def __init__(self, id, rank, title, status, study_results, conditions, interventions, locations, url, file_name):
         self.id = id
@@ -186,11 +186,11 @@ class Trial(object):
 
     def split(self, string):
         """splits strings and return list of words"""
-        return (string.split(";' |,"))
+        return (re.split(' ', string)) #todo melhorar este split
 
     def create_word_list(self):
         """creates its own word set """
-        return set(split(self.title)+split(self.conditions)+split(self.interventions))
+        return set(self.split(self.title)+self.split(self.conditions)+self.split(self.interventions))
 
 class Cloud (object):
     """
@@ -198,19 +198,22 @@ class Cloud (object):
     """
     id_counter = 0
 
-    def __init__(self, word, yes_no, ignore=[], parent = None):
+    def __init__(self, word=None, yes_no=None, ignore=[], parent = None):
         Cloud.id_counter += 1
         self.id = Cloud.id_counter
         self.word = word
         self.yes_no=yes_no
         self.ignore = ignore
         self.parent=parent
-
         self.trials_in_cloud = []
         self.yes_words = set()
         self.no_words = set()
         self.ignore_words = set()
         self.word_frequency_dict = {}
+        if not parent:
+            self.trials_in_cloud = Trial.all_trials_getter()
+            self.word_frequency_dict = Cloud.create_cloud_dict(self.trials_in_cloud)
+
 
     def filter_trials(self, parent_trials, new_word, yes_no):
         # takes old trials, loops them selecting only the yes or removing the nos / returns list
@@ -280,11 +283,11 @@ if __name__ == '__main__':
     # laods trials asking the user for file names and starts trials from an empty list
     files = ['210618_lymphoma_tcell.tsv', '210618_leukemia_lymphoblastic.tsv']
 
-    trials = Load_trials(files)
+    Load_trials(files)
 
-    print(trials)
 
-    print(wl.get())
-    print ('word counter: {}'. format(Word.word_counter))
-    print(f'word counter: {Word.word_counter}')
-    print('word counter: \n', Word.word_counter)
+    print(len(Trial.all_trials_getter()))
+
+    parent_cloud = Cloud()
+    print (parent_cloud.trials_in_cloud)
+    print (parent_cloud.word_frequency_dict)
