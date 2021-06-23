@@ -161,7 +161,7 @@ class Cloud (object):
         # takes old trials, loops them selecting only the yes or removing the nos / returns list
         if yes_no == 'y' or yes_no == 'yes':
         raise exception NotImplemented
-        
+
 
     def get_parent_data (self, parent):
         """
@@ -175,25 +175,47 @@ class Cloud (object):
             return (Trials.all_trial_getter(), {}, {}, {})
 
     def updates_sets(self, parent_yes, parent_no, parent_ignore):
-        self.yes_words = set.union(self.yes_words, parent_yes)
-        self.no_words = set.union(self.no_words, parent_no)
-        self.ignore_words = set.union(self.ignore_words, parent_ignore, self.ignore)
+        """
+        updates yes, no and ignore sets, including the parents, the self word
+        it includes "union" of yes, no and ignore - even though self starts with empty sets
+        I left it here because in the future maybe I include something new that makes these sets
+        not empty before bringing the parent info.
+        """
+        self.yes_words = set.union(self.yes_words, parent_yes) # this seems redundant
+        self.no_words = set.union(self.no_words, parent_no) # this seems redundant
+        self.ignore_words = set.union(self.ignore_words, parent_ignore, self.ignore) # this seems redundant
         if self.yes_no == 'y' or self.yes_no == 'yes':
             self.yes_words.add(self.word)
         elif self.yes_no == 'n' or self.yes_no == 'no':
             self.no_words.add(self.word)
 
+    def create_cloud_dict (self, trials_in_cloud):
+        """
+        gets trials in cloud
+        loops every filtered trial and adds word + frequeny to dict
+        returns dictionary
+        """
+        dict = {}
+        for trial in trials_in_cloud:
+            for word in trial.words:
+                if word in dict:
+                    dict[word] += 1
+                else:
+                    dict[word] = 1
+        return dict
+
     def new_cloud (self):
+        # gets trials, yes, no and ignore from parent
         self.parent_trials, self.parent_yes, self.parent_no, self.parent_ignore = get_parent_data (parent)
+        #updates sets (yes, no and ignore) of self by adding parent info
         self.updates_sets(self.parent_yes, self.parent_no, self.parent_ignore)
         self.trials_in_cloud = self.filter_trials(self.parent_trials, self.word, self.yes_no)
-
-     # todo: continuar daqui
+        self.word_frequency_dict = self.create_cloud_dict (self.trials_in_cloud)
 
 """
 method new_cloud - run a series of methods:
-                   gets trials from parent, filters with new word and set new list of trials
-                   gets parents yes words and no words and updates
+ done                  gets trials from parent, filters with new word and set new list of trials
+ done                  gets parents yes words and no words and updates
                    get new list of trials and gets all the words that have them if
                                      either all trials have a list of words in them (then search by trials)
                                      or i have to go word by word and match trials
