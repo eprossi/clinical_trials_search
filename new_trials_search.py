@@ -76,7 +76,62 @@ This all needs to happen in the CLOUD class
 
 
 """
+def Add_file(files):
+    file = str(input('input file name when done press enter'))
+    if file:
+        return file
+    return
 
+
+def Load_trials(files=[], trials=[]):
+    """
+    Takes in files (list of strings with names of the files to load)
+    Takes in a trials list (of previously instanced trials)
+    if it empty, it will request user to input each file
+    if trials empty it will start from scratch
+    Reads files and instances one Trial for each trial
+    the files must have 7 text fields in the order
+    title, status, study_results, conditions, interventions, locations, url
+    where the first line is a titles line that gets ignored.
+    Returns list trials with references to each trial instanced
+    """
+
+    # adds each file to files list
+
+    while True:
+        new_file = Add_file(files)
+        if new_file:
+            files.append(new_file)
+        else:
+            break
+
+    for file in files:
+        with open(file) as ff:
+            failed_to_read_counter = 0
+            ff.readline()  # skips the title line
+            line_read_counter = 0
+            while True:
+                line_read_counter += 1
+                try:
+                    line = ff.readline()
+                except:
+                    failed_to_read_counter += 1
+                    continue
+                # breaks at last line
+                if not line:
+                    break
+                else:
+                    # splits by tabs
+                    try:
+                        fields = line.split("\t")
+                        rank = int(fields[0])
+                    except:
+                        continue
+                    # instances a new trial for each line and includes in list of trials
+                    trial = (
+                        Trial.add_trial(rank, fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7],
+                              file))
+    return trials
 
 class Trial(object):
     """
@@ -107,7 +162,7 @@ class Trial(object):
         takes in all the fields from the importaed line
         if not repeated instances and adds to list of Trials
         """
-        if not repeated(title):
+        if not Trial.repeated(title):
             Trial.id_counter += 1
             Trial.trials.append(Trial(Trial.id_counter, rank, title, status, study_results, conditions,
                                       interventions, locations, url, file_name))
@@ -221,3 +276,15 @@ class Cloud (object):
         self.trials_in_cloud = self.filter_trials(self.parent_trials, self.word, self.yes_no)
         self.word_frequency_dict = Cloud.create_cloud_dict (self.trials_in_cloud)
 
+if __name__ == '__main__':
+    # laods trials asking the user for file names and starts trials from an empty list
+    files = ['210618_lymphoma_tcell.tsv', '210618_leukemia_lymphoblastic.tsv']
+
+    trials = Load_trials(files)
+
+    print(trials)
+
+    print(wl.get())
+    print ('word counter: {}'. format(Word.word_counter))
+    print(f'word counter: {Word.word_counter}')
+    print('word counter: \n', Word.word_counter)
