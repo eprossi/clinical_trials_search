@@ -71,13 +71,16 @@ def Load_trials(files=[], trials=[]):
     return trials
 
 class Word(object):
+    word_counter = 0
     # slots limita os atributos de cada instance do objeto. Fica mais rapido. mas menos flexivel.
-    __slots__ = ('word', 'frequency', 'trials')
+    __slots__ = ('word', 'frequency', 'trials', 'id')
 
     def __init__(self, word, trial_id):
         self.word = word
         self.frequency = 1
         self.trials = {trial_id}
+        self.id = Word.word_counter
+        Word.word_counter += 1
 
     def add(self, trial_id):
         self.frequency += 1
@@ -123,6 +126,13 @@ class Trial():
         self.locations = locations
         self.url = url
         self.file_name = file_name
+        self.create_word_list()
+
+    def create_word_list(self):
+        wlist=Word_list()
+        all_words = wlist.union(self.title, self.conditions, self.interventions)
+        wlist.add_words(all_words, self.id)
+
 
     def repeated(self, trials):
         for trial in trials:
@@ -143,3 +153,6 @@ if __name__ == '__main__':
     print(trials)
 
     print(wl.get())
+    print ('word counter: {}'. format(Word.word_counter))
+    print(f'word counter: {Word.word_counter}')
+    print('word counter: \n', Word.word_counter)
