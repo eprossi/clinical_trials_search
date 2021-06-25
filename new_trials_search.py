@@ -108,7 +108,8 @@ def Load_trials(files=[], trials=[]):
             break
 
     for file in files:
-        with open(file) as ff:
+        try:
+            ff = open(file)
             failed_to_read_counter = 0
             ff.readline()  # skips the title line
             line_read_counter = 0
@@ -133,6 +134,9 @@ def Load_trials(files=[], trials=[]):
                     trial = (
                         Trial.add_trial(rank, fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7],
                               file))
+            ff.close()
+        finally:
+            a=0
     return trials
 
 class Trial(object):
