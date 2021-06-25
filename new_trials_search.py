@@ -186,7 +186,7 @@ class Trial(object):
 
     def split(self, string):
         """splits strings and return list of words"""
-        return (re.split(' ', string)) #todo melhorar este split
+        return (re.split('; |, |: |"("|"("|;|,|:| |', string))
 
     def create_word_list(self):
         """creates its own word set """
